@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  ros2:
+    build: 
+      context: .
+      args:
+        ROS_DISTRO: foxy
+    # Interactive shell
+    stdin_open: true
+    tty: true
+    # Networking and IPC for ROS 2
+    network_mode: host
+    ipc: host
+    # Needed to display graphical applications
+    privileged: True
+    environment:
+      # Needed to define a TurtleBot3 model type
+      - TURTLEBOT3_MODEL=${TURTLEBOT3_MODEL:-waffle_pi}
+      # Allows graphical programs in the container.
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      # Allows graphical programs in the container.
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
