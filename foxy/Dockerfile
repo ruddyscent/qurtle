@@ -23,30 +23,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-is-python3
 
 # Install ROS 2
-RUN wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/install_ros2_foxy.sh && \
-    chmod 755 ./install_ros2_foxy.sh && \
-    source ./install_ros2_foxy.sh
+RUN wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/install_ros2_${ROS_DISTRO}.sh && \
+    chmod 755 ./install_ros2_${ROS_DISTRO}.sh && \
+    source ./install_ros2_${ROS_DISTRO}.sh
 
 # Install ROS 2-related and TurtleBot3 packages
 RUN apt-get install -y --no-install-recommends \
     # Install Gazebo
-    ros-foxy-gazebo-* \
+    ros-${ROS_DISTRO}-gazebo-* \
     # Install Cartographer
-    ros-foxy-cartographer \
-    ros-foxy-cartographer-ros \
+    ros-${ROS_DISTRO}-cartographer \
+    ros-${ROS_DISTRO}-cartographer-ros \
     # Install Navigation2
-    ros-foxy-navigation2 \
-    ros-foxy-nav2-bringup \
+    ros-${ROS_DISTRO}-navigation2 \
+    ros-${ROS_DISTRO}-nav2-bringup \
     # Install TurtleBot3 Packages
-    ros-foxy-dynamixel-sdk \
-    ros-foxy-turtlebot3-msgs \
-    ros-foxy-turtlebot3
+    ros-${ROS_DISTRO}-dynamixel-sdk \
+    ros-${ROS_DISTRO}-turtlebot3-msgs \
+    ros-${ROS_DISTRO}-turtlebot3
 
 COPY requirements.txt .
 
 RUN python3 -m pip install --no-deps -r requirements.txt 
 
 # Configure environment
-RUN echo 'export ROS_DOMAIN_ID=30 #TURTLEBOT3' >> ~/.bashrc && \
-    source ~/.bashrc
+ENV ROS_DOMAIN_ID=30
+ENV TURTLEBOT3_MODEL=waffle_pi
 
