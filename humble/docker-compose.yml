@@ -1,11 +1,10 @@
 services:
   remote:
-    image: turtlebot3:remote
     build:
       context: .
+      dockerfile: Dockerfile.remote
       args:
         ROS_DISTRO: humble
-      target: remote
     # Interactive shell
     stdin_open: true
     tty: true
@@ -27,12 +26,11 @@ services:
       - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
 
   sbc:
-    image: turtlebot3:sbc
     build:
       context: .
+      dockerfile: Dockerfile.sbc
       args:
         ROS_DISTRO: humble
-      target: sbc
     # Interactive shell
     stdin_open: true
     tty: true
