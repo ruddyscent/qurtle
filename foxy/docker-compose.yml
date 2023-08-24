@@ -15,6 +15,9 @@ services:
     environment:
       # Needed to define a TurtleBot3 model type
       - TURTLEBOT3_MODEL=${TURTLEBOT3_MODEL:-waffle_pi}
+      - OPENCR_PORT=${OPENCR_PORT:-/dev/ttyACM0}
+      - OPENCR_MODEL=${OPENCR_MODEL:-waffle}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-30}
       # Allows graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
