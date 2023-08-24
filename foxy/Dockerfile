@@ -46,7 +46,3 @@ COPY requirements.txt .
 
 RUN python3 -m pip install --no-deps -r requirements.txt 
 
-# Configure environment
-ENV ROS_DOMAIN_ID=30
-ENV TURTLEBOT3_MODEL=waffle_pi
-
