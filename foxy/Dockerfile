@@ -20,7 +20,8 @@ WORKDIR /turtlebot3_ws
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     python3-pip \
-    python-is-python3
+    python-is-python3 \
+    iproute2
 
 # Install ROS 2
 RUN wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/install_ros2_${ROS_DISTRO}.sh && \

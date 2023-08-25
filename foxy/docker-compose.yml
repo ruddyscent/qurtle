@@ -10,6 +10,8 @@ services:
     # Networking and IPC for ROS 2
     network_mode: host
     ipc: host
+    cap_add:
+      - NET_ADMIN
     # Needed to display graphical applications
     privileged: True
     environment:
@@ -17,7 +19,7 @@ services:
       - TURTLEBOT3_MODEL=${TURTLEBOT3_MODEL:-waffle_pi}
       - OPENCR_PORT=${OPENCR_PORT:-/dev/ttyACM0}
       - OPENCR_MODEL=${OPENCR_MODEL:-waffle}
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-30}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:?}
       # Allows graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
