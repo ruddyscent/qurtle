@@ -28,7 +28,7 @@ RUN wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/inst
     source ./install_ros2_${ROS_DISTRO}.sh
 
 # Install ROS 2-related and TurtleBot3 packages
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get install -y \
     # Install Gazebo
     ros-${ROS_DISTRO}-gazebo-* \
     # Install Cartographer
