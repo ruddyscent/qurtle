@@ -1,0 +1,40 @@
+# ROS distribution to use
+ARG ROS_DISTRO=humble
+
+FROM dustynv/ros:${ROS_DISTRO}-desktop-l4t-r35.4.1
+
+# Let us install tzdata painlessly
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Use the bash shell
+SHELL ["/bin/bash", "-c"]
+
+# Build and Install TurtleBot 3 packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-argcomplete \
+    python3-colcon-common-extensions \
+    libboost-system-dev \
+    build-essential \
+    ros-${ROS_DISTRO}-hls-lfcd-lds-driver \
+    ros-${ROS_DISTRO}-turtlebot3-msgs \
+    ros-${ROS_DISTRO}-dynamixel-sdk \
+    libudev-dev
+
+RUN mkdir -p ~/turtlebot3_ws/src && \
+    cd ~/turtlebot3_ws/src && \
+    git clone -b ${ROS_DISTRO}-devel https://github.com/ROBOTIS-GIT/turtlebot3.git && \
+    git clone -b ros2-devel https://github.com/ROBOTIS-GIT/ld08_driver.git && \
+    cd ~/turtlebot3_ws/src/turtlebot3 && \
+    rm -r turtlebot3_cartographer turtlebot3_navigation2 && \
+    cd ~/turtlebot3_ws/ && \
+    colcon build --symlink-install --parallel-workers 1 && \
+    echo 'source ~/turtlebot3_ws/install/setup.bash' >> ~/.bashrc
+
+# USB Port Setting for OpenCR
+RUN cp `ros2 pkg prefix turtlebot3_bringup`/share/turtlebot3_bringup/script/99-turtlebot3-cdc.rules /etc/udev/rules.d/
+
+# Set ROS Domain ID
+ENV ROS_DOMAIN_ID=30
+
+# Configure LDS
+ENV LDS_MODEL=LDS-01
