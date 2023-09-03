@@ -3,7 +3,6 @@ services:
   sbc:
     build:
       context: .
-      dockerfile: Dockerfile.sbc
       args:
         ROS_DISTRO: foxy
     # Interactive shell
