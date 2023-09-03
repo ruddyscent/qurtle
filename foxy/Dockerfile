@@ -3,8 +3,6 @@ ARG ROS_DISTRO=foxy
 
 FROM osrf/ros:${ROS_DISTRO}-desktop
 
-ARG ROS_DISTRO
-
 # Let us install tzdata painlessly
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -12,7 +10,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
 # Install prerequiste packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     wget \
     python3-pip \
     python-is-python3 \
@@ -21,7 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     locales
 
 # change the locale from POSIX to UTF-8
-RUN locale-gen en_US en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+RUN locale-gen en_US en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
 
@@ -38,7 +38,7 @@ WORKDIR /robot_ws
 # Install ROS 2-related and TurtleBot3 packages
 RUN apt-get install -y \
     # DDS
-    ros-foxy-rmw-cyclonedds-cpp \
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
     # Install Gazebo
     ros-${ROS_DISTRO}-gazebo-* \
     # Install Cartographer
