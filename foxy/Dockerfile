@@ -26,9 +26,9 @@ ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
 
 # Create workspace
-RUN mkdir -p /turtlebot3_ws
+RUN mkdir -p /robot_ws
 
-WORKDIR /turtlebot3_ws
+WORKDIR /robot_ws
 
 # Install ROS 2
 # RUN wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/install_ros2_${ROS_DISTRO}.sh && \
