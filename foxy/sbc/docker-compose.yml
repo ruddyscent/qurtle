@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+  sbc:
+    build:
+      context: .
+      args:
+        ROS_DISTRO: foxy
+    # Interactive shell
+    stdin_open: true
+    tty: true
+    # Networking and IPC for ROS 2
+    network_mode: host
+    ipc: host
+    cap_add:
+      - NET_ADMIN
+    # Need to display graphical applications
+    privileged: True
+    environment:
+      # ROS 2
+      - ROS_DOMAIN_ID=$${ROS_DOMAIN_ID:?}
+      # Need to define a TurtleBot3 model type
+      - TURTLEBOT3_MODEL=$${TURTLEBOT3_MODEL:-waffle_pi}
+      - OPENCR_PORT=$${OPENCR_PORT:-/dev/ttyACM0}
+      - OPENCR_MODEL=$${OPENCR_MODEL:-waffle}
+      - LDS_MODEL=$${LDS_MODEL:-LDS-01}
+      # Allow graphical programs in the container.
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      # Allow graphical programs in the container.
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /$${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+      # Workspace
+      - ../robot_ws:/robot_ws

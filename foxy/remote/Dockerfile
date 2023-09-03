@@ -31,8 +31,8 @@ WORKDIR /robot_ws
 
 # Install ROS 2
 # RUN wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/install_ros2_${ROS_DISTRO}.sh && \
-#     chmod 755 ./install_ros2_${ROS_DISTRO}.sh && \
-#     source ./install_ros2_${ROS_DISTRO}.sh
+#    chmod 755 ./install_ros2_${ROS_DISTRO}.sh && \
+#    source ./install_ros2_${ROS_DISTRO}.sh
 
 # Install ROS 2-related and TurtleBot3 packages
 RUN apt-get install -y \
@@ -55,4 +55,12 @@ COPY requirements.txt .
 
 RUN python3 -m pip install --no-deps -r requirements.txt 
 
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc && \
+    echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc && \
+    echo "source /usr/share/vcstool-completion/vcs.bash" >> ~/.bashrc
+
+# https://answers.ros.org/question/372890/rqt-button-not-show-icon/
+RUN ln -s /usr/share/icons/Tango ~/.icons/hicolor
+
+RUN echo "alias vi=nvim" >> ~/.bash_aliases
+

@@ -1,7 +1,7 @@
 services:
   remote:
     platform: linux/amd64
-    build: 
+    build:
       context: .
       args:
         ROS_DISTRO: foxy
@@ -13,21 +13,19 @@ services:
     ipc: host
     cap_add:
       - NET_ADMIN
-    # Needed to display graphical applications
+    # Need to display graphical applications
     privileged: True
     environment:
-      # ROS 2
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:?}
-      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
-      # Needed to define a TurtleBot3 model type
+      # Need to define a TurtleBot3 model type
       - TURTLEBOT3_MODEL=${TURTLEBOT3_MODEL:-waffle_pi}
-      # Allows graphical programs in the container.
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:?}
+      # Allow graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
       - NVIDIA_DRIVER_CAPABILITIES=all
     volumes:
-      # Allows graphical programs in the container.
+      # Allow graphical programs in the container.
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+      - /${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
       # Workspace
-      - ./robot_ws:/robot_ws
+      - ../robot_ws:/robot_ws
