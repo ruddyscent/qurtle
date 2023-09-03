@@ -27,7 +27,6 @@ ENV PYTHONIOENCODING=utf-8
 
 # Create workspace
 RUN mkdir -p /robot_ws
-
 WORKDIR /robot_ws
 
 # Install ROS 2
@@ -55,9 +54,5 @@ RUN apt-get install -y \
 COPY requirements.txt .
 
 RUN python3 -m pip install --no-deps -r requirements.txt 
-
-# Set the default DDS middleware to cyclonedds
-# https://github.com/ros2/rclcpp/issues/1335
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
