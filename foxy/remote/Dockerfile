@@ -57,5 +57,8 @@ RUN python3 -m pip install --no-deps -r requirements.txt
 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
 
+# https://answers.ros.org/question/372890/rqt-button-not-show-icon/
+RUN ln -s /usr/share/icons/Tango ~/.icons/hicolor
+
 RUN echo "alias vi=nvim" >> ~/.bash_aliases
 
