@@ -16,12 +16,13 @@ services:
     # Need to display graphical applications
     privileged: True
     environment:
+      # ROS 2
+      - ROS_DOMAIN_ID=$${ROS_DOMAIN_ID:?}
       # Need to define a TurtleBot3 model type
       - TURTLEBOT3_MODEL=$${TURTLEBOT3_MODEL:-waffle_pi}
       - OPENCR_PORT=$${OPENCR_PORT:-/dev/ttyACM0}
       - OPENCR_MODEL=$${OPENCR_MODEL:-waffle}
       - LDS_MODEL=$${LDS_MODEL:-LDS-01}
-      - ROS_DOMAIN_ID=$${ROS_DOMAIN_ID:?}
       # Allow graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
@@ -30,3 +31,5 @@ services:
       # Allow graphical programs in the container.
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /$${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+      # Workspace
+      - ../robot_ws:/robot_ws
