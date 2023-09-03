@@ -1,5 +1,6 @@
 services:
   remote:
+    platform: linux/amd64
     build: 
       context: .
       args:
@@ -15,11 +16,11 @@ services:
     # Needed to display graphical applications
     privileged: True
     environment:
+      # ROS 2
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:?}
+      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
       # Needed to define a TurtleBot3 model type
       - TURTLEBOT3_MODEL=${TURTLEBOT3_MODEL:-waffle_pi}
-      - OPENCR_PORT=${OPENCR_PORT:-/dev/ttyACM0}
-      - OPENCR_MODEL=${OPENCR_MODEL:-waffle}
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:?}
       # Allows graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
@@ -28,3 +29,5 @@ services:
       # Allows graphical programs in the container.
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+      # Workspace
+      - ./robot_ws:/robot_ws

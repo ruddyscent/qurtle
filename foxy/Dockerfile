@@ -3,8 +3,6 @@ ARG ROS_DISTRO=foxy
 
 FROM osrf/ros:${ROS_DISTRO}-desktop
 
-ARG ROS_DISTRO
-
 # Let us install tzdata painlessly
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -12,7 +10,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
 # Install prerequiste packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     wget \
     python3-pip \
     python-is-python3 \
@@ -21,14 +20,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     locales
 
 # change the locale from POSIX to UTF-8
-RUN locale-gen en_US en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+RUN locale-gen en_US en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
 
 # Create workspace
-RUN mkdir -p /turtlebot3_ws
-
-WORKDIR /turtlebot3_ws
+RUN mkdir -p /robot_ws
+WORKDIR /robot_ws
 
 # Install ROS 2
 # RUN wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/install_ros2_${ROS_DISTRO}.sh && \
@@ -38,7 +37,7 @@ WORKDIR /turtlebot3_ws
 # Install ROS 2-related and TurtleBot3 packages
 RUN apt-get install -y \
     # DDS
-    ros-foxy-rmw-cyclonedds-cpp \
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
     # Install Gazebo
     ros-${ROS_DISTRO}-gazebo-* \
     # Install Cartographer
@@ -55,9 +54,5 @@ RUN apt-get install -y \
 COPY requirements.txt .
 
 RUN python3 -m pip install --no-deps -r requirements.txt 
-
-# Set the default DDS middleware to cyclonedds
-# https://github.com/ros2/rclcpp/issues/1335
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
