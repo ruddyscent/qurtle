@@ -16,9 +16,11 @@ services:
     # Need to display graphical applications
     privileged: True
     environment:
+      # ROS 2
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:?}
+      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
       # Need to define a TurtleBot3 model type
       - TURTLEBOT3_MODEL=${TURTLEBOT3_MODEL:-waffle_pi}
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:?}
       # Allow graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1

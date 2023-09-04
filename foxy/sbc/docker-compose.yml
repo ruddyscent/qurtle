@@ -18,6 +18,7 @@ services:
     environment:
       # ROS 2
       - ROS_DOMAIN_ID=$${ROS_DOMAIN_ID:?}
+      - RMW_IMPLEMENTATION=$${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
       # Need to define a TurtleBot3 model type
       - TURTLEBOT3_MODEL=$${TURTLEBOT3_MODEL:-waffle_pi}
       - OPENCR_PORT=$${OPENCR_PORT:-/dev/ttyACM0}
