@@ -1,26 +1,27 @@
 /*******************************************************************************
-* Copyright 2016 ROBOTIS CO., LTD.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*******************************************************************************/
+ * Copyright 2023 Kyungwon Chun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 
-#include "../../include/turtlebot3/turtlebot3.h"
+#include "../../include/qurtle/qurtle.h"
 
 /*******************************************************************************
-* Definition of dependency data according to TB3 model.
-*******************************************************************************/
-typedef struct TB3ModelInfo{
-  const char* model_str;
+ * Definition of dependency data according to TB3 model.
+ *******************************************************************************/
+typedef struct TB3ModelInfo
+{
+  const char *model_str;
   uint32_t model_info;
   float wheel_radius;
   float wheel_separation;
@@ -30,43 +31,42 @@ typedef struct TB3ModelInfo{
 } TB3ModelInfo;
 
 static const TB3ModelInfo burger_info = {
-  "Burger",
-  1,
-  0.033,
-  0.160,
-  0.080,
-  0.105,
-  false,
+    "Burger",
+    1,
+    0.033,
+    0.160,
+    0.080,
+    0.105,
+    false,
 };
 
 static const TB3ModelInfo waffle_info = {
-  "Waffle",
-  2,
-  0.033,
-  0.287,
-  0.1435,
-  0.220,
-  false,
+    "Waffle",
+    2,
+    0.033,
+    0.287,
+    0.1435,
+    0.220,
+    false,
 };
 
 static const TB3ModelInfo waffle_with_manipulator_info = {
-  "Waffle_OpenManipulator",
-  3,
-  0.033,
-  0.287,
-  0.1435,
-  0.220,
-  true,
+    "Waffle_OpenManipulator",
+    3,
+    0.033,
+    0.287,
+    0.1435,
+    0.220,
+    true,
 };
 
-
 /*******************************************************************************
-* Declaration for motors
-*******************************************************************************/
-static Turtlebot3MotorDriver motor_driver;
+ * Declaration for motors
+ *******************************************************************************/
+static QurtleMotorDriver motor_driver;
 static OpenManipulatorDriver manipulator_driver(motor_driver.getDxl());
 
-static const TB3ModelInfo* p_tb3_model_info;
+static const TB3ModelInfo *p_tb3_model_info;
 static float max_linear_velocity, min_linear_velocity;
 static float max_angular_velocity, min_angular_velocity;
 
@@ -83,30 +83,30 @@ static bool get_connection_state_with_joints();
 static void set_connection_state_with_joints(bool is_connected);
 
 /*******************************************************************************
-* Declaration for sensors
-*******************************************************************************/
+ * Declaration for sensors
+ *******************************************************************************/
 static Turtlebot3Sensor sensors;
 
 /*******************************************************************************
-* Declaration for diagnosis
-*******************************************************************************/
+ * Declaration for diagnosis
+ *******************************************************************************/
 static Turtlebot3Diagnosis diagnosis;
 
 /*******************************************************************************
-* Declaration for controllers
-*******************************************************************************/
+ * Declaration for controllers
+ *******************************************************************************/
 static Turtlebot3Controller controllers;
 
 /*******************************************************************************
-* Declaration for DYNAMIXEL Slave Function
-*******************************************************************************/
+ * Declaration for DYNAMIXEL Slave Function
+ *******************************************************************************/
 #define SERIAL_DXL_SLAVE Serial
 const uint8_t ID_DXL_SLAVE = 200;
 const uint16_t MODEL_NUM_DXL_SLAVE = 0x5000;
 const float PROTOCOL_VERSION_DXL_SLAVE = 2.0;
 const uint32_t HEARTBEAT_TIMEOUT_MS = 500;
 
-static void dxl_slave_write_callback_func(uint16_t addr, uint8_t &dxl_err_code, void* arg);
+static void dxl_slave_write_callback_func(uint16_t addr, uint8_t &dxl_err_code, void *arg);
 
 static bool get_connection_state_with_ros2_node();
 static void set_connection_state_with_ros2_node(bool is_connected);
@@ -120,84 +120,84 @@ static void update_battery_status(uint32_t interval_ms);
 static void update_analog_sensors(uint32_t interval_ms);
 static void update_joint_status(uint32_t interval_ms);
 
-
 DYNAMIXEL::USBSerialPortHandler port_dxl_slave(SERIAL_DXL_SLAVE);
 DYNAMIXEL::Slave dxl_slave(port_dxl_slave, MODEL_NUM_DXL_SLAVE);
 
-enum ControlTableItemAddr{
-  ADDR_MODEL_INFORM    = 2,
-  
-  ADDR_MILLIS          = 10,
+enum ControlTableItemAddr
+{
+  ADDR_MODEL_INFORM = 2,
 
-  ADDR_DEBUG_MODE      = 14,  
-  ADDR_CONNECT_ROS2    = 15,
-  ADDR_CONNECT_MANIP   = 16,
+  ADDR_MILLIS = 10,
 
-  ADDR_DEVICE_STATUS   = 18,
-  ADDR_HEARTBEAT       = 19,
+  ADDR_DEBUG_MODE = 14,
+  ADDR_CONNECT_ROS2 = 15,
+  ADDR_CONNECT_MANIP = 16,
 
-  ADDR_USER_LED_1      = 20,
-  ADDR_USER_LED_2      = 21,
-  ADDR_USER_LED_3      = 22,
-  ADDR_USER_LED_4      = 23,
+  ADDR_DEVICE_STATUS = 18,
+  ADDR_HEARTBEAT = 19,
 
-  ADDR_BUTTON_1        = 26,
-  ADDR_BUTTON_2        = 27,
-  ADDR_BUMPER_1        = 28,
-  ADDR_BUMPER_2        = 29,
+  ADDR_USER_LED_1 = 20,
+  ADDR_USER_LED_2 = 21,
+  ADDR_USER_LED_3 = 22,
+  ADDR_USER_LED_4 = 23,
 
-  ADDR_ILLUMINATION    = 30,
-  ADDR_IR              = 34,
-  ADDR_SORNA           = 38,
+  ADDR_BUTTON_1 = 26,
+  ADDR_BUTTON_2 = 27,
+  ADDR_BUMPER_1 = 28,
+  ADDR_BUMPER_2 = 29,
+
+  ADDR_ILLUMINATION = 30,
+  ADDR_IR = 34,
+  ADDR_SORNA = 38,
 
   ADDR_BATTERY_VOLTAGE = 42,
   ADDR_BATTERY_PERCENT = 46,
 
-  ADDR_SOUND           = 50,
+  ADDR_SOUND = 50,
 
-  ADDR_IMU_RECALIBRATION  = 59,
+  ADDR_IMU_RECALIBRATION = 59,
   ADDR_ANGULAR_VELOCITY_X = 60,
   ADDR_ANGULAR_VELOCITY_Y = 64,
   ADDR_ANGULAR_VELOCITY_Z = 68,
-  ADDR_LINEAR_ACC_X       = 72,
-  ADDR_LINEAR_ACC_Y       = 76,
-  ADDR_LINEAR_ACC_Z       = 80,
-  ADDR_MAGNETIC_X         = 84,
-  ADDR_MAGNETIC_Y         = 88,
-  ADDR_MAGNETIC_Z         = 92,
-  ADDR_ORIENTATION_W      = 96,
-  ADDR_ORIENTATION_X      = 100,
-  ADDR_ORIENTATION_Y      = 104,
-  ADDR_ORIENTATION_Z      = 108,
-  
-  ADDR_PRESENT_CURRENT_L  = 120,
-  ADDR_PRESENT_CURRENT_R  = 124,
+  ADDR_LINEAR_ACC_X = 72,
+  ADDR_LINEAR_ACC_Y = 76,
+  ADDR_LINEAR_ACC_Z = 80,
+  ADDR_MAGNETIC_X = 84,
+  ADDR_MAGNETIC_Y = 88,
+  ADDR_MAGNETIC_Z = 92,
+  ADDR_ORIENTATION_W = 96,
+  ADDR_ORIENTATION_X = 100,
+  ADDR_ORIENTATION_Y = 104,
+  ADDR_ORIENTATION_Z = 108,
+
+  ADDR_PRESENT_CURRENT_L = 120,
+  ADDR_PRESENT_CURRENT_R = 124,
   ADDR_PRESENT_VELOCITY_L = 128,
   ADDR_PRESENT_VELOCITY_R = 132,
   ADDR_PRESENT_POSITION_L = 136,
   ADDR_PRESENT_POSITION_R = 140,
-  
-  ADDR_MOTOR_CONNECT      = 148,
-  ADDR_MOTOR_TORQUE       = 149,
-  ADDR_CMD_VEL_LINEAR_X   = 150,
-  ADDR_CMD_VEL_LINEAR_Y   = 154,
-  ADDR_CMD_VEL_LINEAR_Z   = 158,
-  ADDR_CMD_VEL_ANGULAR_X  = 162,
-  ADDR_CMD_VEL_ANGULAR_Y  = 166,
-  ADDR_CMD_VEL_ANGULAR_Z  = 170,
-  ADDR_PROFILE_ACC_L      = 174,
-  ADDR_PROFILE_ACC_R      = 178,
 
-  ADDR_TORQUE_JOINT             = 199,
+  ADDR_MOTOR_CONNECT = 148,
+  ADDR_MOTOR_TORQUE = 149,
+  ADDR_CMD_VEL_LINEAR_X = 150,
+  ADDR_CMD_VEL_LINEAR_Y = 154,
+  ADDR_CMD_VEL_LINEAR_Z = 158,
+  ADDR_CMD_VEL_ANGULAR_X = 162,
+  ADDR_CMD_VEL_ANGULAR_Y = 166,
+  ADDR_CMD_VEL_ANGULAR_Z = 170,
+  ADDR_PROFILE_ACC_L = 174,
+  ADDR_PROFILE_ACC_R = 178,
 
-  ADDR_GOAL_POSITION_JOINT_1    = 200,
-  ADDR_GOAL_POSITION_JOINT_2    = 204,
-  ADDR_GOAL_POSITION_JOINT_3    = 208,
-  ADDR_GOAL_POSITION_JOINT_4    = 212,
-  ADDR_GOAL_POSITION_GRIPPER    = 216,
-  ADDR_GOAL_POSITION_WR_JOINT   = 220,
+  ADDR_TORQUE_JOINT = 199,
+
+  ADDR_GOAL_POSITION_JOINT_1 = 200,
+  ADDR_GOAL_POSITION_JOINT_2 = 204,
+  ADDR_GOAL_POSITION_JOINT_3 = 208,
+  ADDR_GOAL_POSITION_JOINT_4 = 212,
+  ADDR_GOAL_POSITION_GRIPPER = 216,
+  ADDR_GOAL_POSITION_WR_JOINT = 220,
   ADDR_GOAL_POSITION_WR_GRIPPER = 221,
-  ADDR_GOAL_POSITION_RD         = 222,
+  ADDR_GOAL_POSITION_RD = 222,
 
   ADDR_PRESENT_POSITION_JOINT_1 = 224,
   ADDR_PRESENT_POSITION_JOINT_2 = 228,
@@ -211,42 +211,43 @@ enum ControlTableItemAddr{
   ADDR_PRESENT_VELOCITY_JOINT_4 = 256,
   ADDR_PRESENT_VELOCITY_GRIPPER = 260,
 
-  ADDR_PRESENT_CURRENT_JOINT_1  = 264,
-  ADDR_PRESENT_CURRENT_JOINT_2  = 266,
-  ADDR_PRESENT_CURRENT_JOINT_3  = 268,
-  ADDR_PRESENT_CURRENT_JOINT_4  = 270,
-  ADDR_PRESENT_CURRENT_GRIPPER  = 272,
+  ADDR_PRESENT_CURRENT_JOINT_1 = 264,
+  ADDR_PRESENT_CURRENT_JOINT_2 = 266,
+  ADDR_PRESENT_CURRENT_JOINT_3 = 268,
+  ADDR_PRESENT_CURRENT_JOINT_4 = 270,
+  ADDR_PRESENT_CURRENT_GRIPPER = 272,
 
-  ADDR_PROFILE_ACC_JOINT_1      = 284,
-  ADDR_PROFILE_ACC_JOINT_2      = 288,
-  ADDR_PROFILE_ACC_JOINT_3      = 292,
-  ADDR_PROFILE_ACC_JOINT_4      = 296,
-  ADDR_PROFILE_ACC_GRIPPER      = 300,
-  ADDR_PROFILE_ACC_WR_JOINT     = 304,
-  ADDR_PROFILE_ACC_WR_GRIPPER   = 305,
-  ADDR_PROFILE_ACC_RD           = 306,
+  ADDR_PROFILE_ACC_JOINT_1 = 284,
+  ADDR_PROFILE_ACC_JOINT_2 = 288,
+  ADDR_PROFILE_ACC_JOINT_3 = 292,
+  ADDR_PROFILE_ACC_JOINT_4 = 296,
+  ADDR_PROFILE_ACC_GRIPPER = 300,
+  ADDR_PROFILE_ACC_WR_JOINT = 304,
+  ADDR_PROFILE_ACC_WR_GRIPPER = 305,
+  ADDR_PROFILE_ACC_RD = 306,
 
-  ADDR_PROFILE_VEL_JOINT_1      = 308,
-  ADDR_PROFILE_VEL_JOINT_2      = 312,
-  ADDR_PROFILE_VEL_JOINT_3      = 316,
-  ADDR_PROFILE_VEL_JOINT_4      = 320,
-  ADDR_PROFILE_VEL_GRIPPER      = 324,
-  ADDR_PROFILE_VEL_WR_JOINT     = 328,
-  ADDR_PROFILE_VEL_WR_GRIPPER   = 329,
-  ADDR_PROFILE_VEL_RD           = 330,
+  ADDR_PROFILE_VEL_JOINT_1 = 308,
+  ADDR_PROFILE_VEL_JOINT_2 = 312,
+  ADDR_PROFILE_VEL_JOINT_3 = 316,
+  ADDR_PROFILE_VEL_JOINT_4 = 320,
+  ADDR_PROFILE_VEL_GRIPPER = 324,
+  ADDR_PROFILE_VEL_WR_JOINT = 328,
+  ADDR_PROFILE_VEL_WR_GRIPPER = 329,
+  ADDR_PROFILE_VEL_RD = 330,
 
-  ADDR_GOAL_CURRENT_JOINT_1     = 332,
-  ADDR_GOAL_CURRENT_JOINT_2     = 334,
-  ADDR_GOAL_CURRENT_JOINT_3     = 336,
-  ADDR_GOAL_CURRENT_JOINT_4     = 338,
-  ADDR_GOAL_CURRENT_GRIPPER     = 340,  
-  ADDR_GOAL_CURRENT_WR_JOINT    = 342,
-  ADDR_GOAL_CURRENT_WR_GRIPPER  = 343,
-  ADDR_GOAL_CURRENT_RD          = 344,
+  ADDR_GOAL_CURRENT_JOINT_1 = 332,
+  ADDR_GOAL_CURRENT_JOINT_2 = 334,
+  ADDR_GOAL_CURRENT_JOINT_3 = 336,
+  ADDR_GOAL_CURRENT_JOINT_4 = 338,
+  ADDR_GOAL_CURRENT_GRIPPER = 340,
+  ADDR_GOAL_CURRENT_WR_JOINT = 342,
+  ADDR_GOAL_CURRENT_WR_GRIPPER = 343,
+  ADDR_GOAL_CURRENT_RD = 344,
 
 };
 
-typedef struct ControlItemVariables{
+typedef struct ControlItemVariables
+{
   uint32_t model_inform;
 
   uint32_t dev_time_millis;
@@ -288,7 +289,7 @@ typedef struct ControlItemVariables{
   uint32_t profile_acceleration[MortorLocation::MOTOR_NUM_MAX];
 
   bool joint_torque_enable_state;
-  joint_position_info_t joint_goal_position;  
+  joint_position_info_t joint_goal_position;
   joint_position_info_t joint_present_position;
   joint_velocity_info_t joint_present_velocity;
   joint_current_info_t joint_present_current;
@@ -312,38 +313,45 @@ typedef struct ControlItemVariables{
   bool joint_goal_current_wr_gripper;
   bool joint_goal_current_rd;
 
-}ControlItemVariables;
+} ControlItemVariables;
 
 static ControlItemVariables control_items;
 
-
 /*******************************************************************************
-* Definition for TurtleBot3Core 'begin()' function
-*******************************************************************************/
-void TurtleBot3Core::begin(const char* model_name)
+ * Definition for QurtleCore 'begin()' function
+ *******************************************************************************/
+void QurtleCore::begin(const char *model_name)
 {
   uint16_t model_motor_rpm;
 
-  if(strcmp(model_name, "Burger") == 0 || strcmp(model_name, "burger") == 0){
+  if (strcmp(model_name, "Burger") == 0 || strcmp(model_name, "burger") == 0)
+  {
     p_tb3_model_info = &burger_info;
     model_motor_rpm = 61;
-  }else if(strcmp(model_name, "Waffle") == 0 || strcmp(model_name, "waffle") == 0){
+  }
+  else if (strcmp(model_name, "Waffle") == 0 || strcmp(model_name, "waffle") == 0)
+  {
     p_tb3_model_info = &waffle_info;
     model_motor_rpm = 77;
-  }else if(strcmp(model_name, "Waffle_OpenManipulator") == 0){
+  }
+  else if (strcmp(model_name, "Waffle_OpenManipulator") == 0)
+  {
     p_tb3_model_info = &waffle_with_manipulator_info;
     model_motor_rpm = 77;
-  }else{
+  }
+  else
+  {
     p_tb3_model_info = &burger_info;
     model_motor_rpm = 61;
   }
 
-  max_linear_velocity = p_tb3_model_info->wheel_radius*2*PI*model_motor_rpm/60;
+  max_linear_velocity = p_tb3_model_info->wheel_radius * 2 * PI * model_motor_rpm / 60;
   min_linear_velocity = -max_linear_velocity;
-  max_angular_velocity = max_linear_velocity/p_tb3_model_info->turning_radius;
+  max_angular_velocity = max_linear_velocity / p_tb3_model_info->turning_radius;
   min_angular_velocity = -max_angular_velocity;
 
-  bool ret; (void)ret;
+  bool ret;
+  (void)ret;
   DEBUG_SERIAL_BEGIN(57600);
   DEBUG_PRINTLN(" ");
   DEBUG_PRINTLN("Version : V221004R1");
@@ -351,21 +359,21 @@ void TurtleBot3Core::begin(const char* model_name)
 
   // Setting for Dynamixel motors
   ret = motor_driver.init();
-  DEBUG_PRINTLN(ret==true?"Motor driver setup completed.":"Motor driver setup failed.");
+  DEBUG_PRINTLN(ret == true ? "Motor driver setup completed." : "Motor driver setup failed.");
   // Setting for IMU
   ret = sensors.init();
-  DEBUG_PRINTLN(ret==true?"Sensors setup completed.":"Sensors setup failed.");
+  DEBUG_PRINTLN(ret == true ? "Sensors setup completed." : "Sensors setup failed.");
   // Init diagnosis
   ret = diagnosis.init();
-  DEBUG_PRINTLN(ret==true?"Diagnosis setup completed.":"Diagnosis setup failed.");
+  DEBUG_PRINTLN(ret == true ? "Diagnosis setup completed." : "Diagnosis setup failed.");
   // Setting for ROBOTIS RC100 remote controller and cmd_vel
   ret = controllers.init(max_linear_velocity, max_angular_velocity);
-  DEBUG_PRINTLN(ret==true?"RC100 Controller setup completed.":"RC100 Controller setup failed.");
+  DEBUG_PRINTLN(ret == true ? "RC100 Controller setup completed." : "RC100 Controller setup failed.");
 
   if (p_tb3_model_info->has_manipulator == true)
-  {    
+  {
     ret = manipulator_driver.init();
-    DEBUG_PRINTLN(ret==true?"Manipulator driver setup completed.":"Manipulator driver setup failed.");
+    DEBUG_PRINTLN(ret == true ? "Manipulator driver setup completed." : "Manipulator driver setup failed.");
   }
 
   DEBUG_PRINT("Dynamixel2Arduino Item Max : ");
@@ -373,7 +381,7 @@ void TurtleBot3Core::begin(const char* model_name)
 
   control_items.debug_mode = false;
   control_items.is_connect_ros2_node = false;
-  control_items.is_connect_manipulator = false;  
+  control_items.is_connect_manipulator = false;
 
   // Port begin
   dxl_slave.begin();
@@ -434,12 +442,12 @@ void TurtleBot3Core::begin(const char* model_name)
   dxl_slave.addControlItem(ADDR_ORIENTATION_Y, control_items.orientation[2]);
   dxl_slave.addControlItem(ADDR_ORIENTATION_Z, control_items.orientation[3]);
   // Items to check status of motors
-  dxl_slave.addControlItem(ADDR_PRESENT_POSITION_L, control_items.present_position[MortorLocation::LEFT]);
-  dxl_slave.addControlItem(ADDR_PRESENT_POSITION_R, control_items.present_position[MortorLocation::RIGHT]);
-  dxl_slave.addControlItem(ADDR_PRESENT_VELOCITY_L, control_items.present_velocity[MortorLocation::LEFT]);
-  dxl_slave.addControlItem(ADDR_PRESENT_VELOCITY_R, control_items.present_velocity[MortorLocation::RIGHT]);
-  dxl_slave.addControlItem(ADDR_PRESENT_CURRENT_L, control_items.present_current[MortorLocation::LEFT]);
-  dxl_slave.addControlItem(ADDR_PRESENT_CURRENT_R, control_items.present_current[MortorLocation::RIGHT]);
+  dxl_slave.addControlItem(ADDR_PRESENT_POSITION_L, control_items.present_position[MortorLocation::FRONT_LEFT]);
+  dxl_slave.addControlItem(ADDR_PRESENT_POSITION_R, control_items.present_position[MortorLocation::FRONT_RIGHT]);
+  dxl_slave.addControlItem(ADDR_PRESENT_VELOCITY_L, control_items.present_velocity[MortorLocation::FRONT_LEFT]);
+  dxl_slave.addControlItem(ADDR_PRESENT_VELOCITY_R, control_items.present_velocity[MortorLocation::FRONT_RIGHT]);
+  dxl_slave.addControlItem(ADDR_PRESENT_CURRENT_L, control_items.present_current[MortorLocation::FRONT_LEFT]);
+  dxl_slave.addControlItem(ADDR_PRESENT_CURRENT_R, control_items.present_current[MortorLocation::FRONT_RIGHT]);
   // Items to control motors
   dxl_slave.addControlItem(ADDR_MOTOR_CONNECT, control_items.is_connect_motors);
   dxl_slave.addControlItem(ADDR_MOTOR_TORQUE, control_items.motor_torque_enable_state);
@@ -448,11 +456,14 @@ void TurtleBot3Core::begin(const char* model_name)
   dxl_slave.addControlItem(ADDR_CMD_VEL_LINEAR_Z, control_items.cmd_vel_linear[2]);
   dxl_slave.addControlItem(ADDR_CMD_VEL_ANGULAR_X, control_items.cmd_vel_angular[0]);
   dxl_slave.addControlItem(ADDR_CMD_VEL_ANGULAR_Y, control_items.cmd_vel_angular[1]);
-  dxl_slave.addControlItem(ADDR_CMD_VEL_ANGULAR_Z, control_items.cmd_vel_angular[2]);  
-  dxl_slave.addControlItem(ADDR_PROFILE_ACC_L, control_items.profile_acceleration[MortorLocation::LEFT]);
-  dxl_slave.addControlItem(ADDR_PROFILE_ACC_R, control_items.profile_acceleration[MortorLocation::RIGHT]);
+  dxl_slave.addControlItem(ADDR_CMD_VEL_ANGULAR_Z, control_items.cmd_vel_angular[2]);
+  dxl_slave.addControlItem(ADDR_PROFILE_ACC_L, control_items.profile_acceleration[MortorLocation::FRONT_LEFT]);
+  dxl_slave.addControlItem(ADDR_PROFILE_ACC_L, control_items.profile_acceleration[MortorLocation::REAR_LEFT]);
+  dxl_slave.addControlItem(ADDR_PROFILE_ACC_R, control_items.profile_acceleration[MortorLocation::FRONT_RIGHT]);
+  dxl_slave.addControlItem(ADDR_PROFILE_ACC_R, control_items.profile_acceleration[MortorLocation::REAR_RIGHT]);
 
-  if (p_tb3_model_info->has_manipulator == true) {
+  if (p_tb3_model_info->has_manipulator)
+  {
     control_items.joint_goal_position_wr_joint = false;
     control_items.joint_goal_position_wr_gripper = false;
     control_items.joint_goal_position_rd = false;
@@ -521,57 +532,64 @@ void TurtleBot3Core::begin(const char* model_name)
     dxl_slave.addControlItem(ADDR_GOAL_CURRENT_GRIPPER, control_items.joint_goal_current.value[GRIPPER]);
     dxl_slave.addControlItem(ADDR_GOAL_CURRENT_WR_JOINT, control_items.joint_goal_current_wr_joint);
     dxl_slave.addControlItem(ADDR_GOAL_CURRENT_WR_GRIPPER, control_items.joint_goal_current_wr_gripper);
-    dxl_slave.addControlItem(ADDR_GOAL_CURRENT_RD, control_items.joint_goal_current_rd);    
+    dxl_slave.addControlItem(ADDR_GOAL_CURRENT_RD, control_items.joint_goal_current_rd);
   }
 
   // Set user callback function for processing write command from master.
   dxl_slave.setWriteCallbackFunc(dxl_slave_write_callback_func);
 
   // Check connection state with motors.
-  if(motor_driver.is_connected() == true){
+  if (motor_driver.is_connected() == true)
+  {
     motor_driver.set_torque(true);
     control_items.device_status = STATUS_RUNNING;
     set_connection_state_with_motors(true);
     DEBUG_PRINTLN("Wheel motors are connected");
-  }else{
+  }
+  else
+  {
     control_items.device_status = STATUS_NOT_CONNECTED_MOTORS;
     set_connection_state_with_motors(false);
     DEBUG_PRINTLN("Can't communicate with the motor!");
     DEBUG_PRINTLN("  Please check the connection to the motor and the power supply.");
     DEBUG_PRINTLN();
-  } 
-  control_items.is_connect_motors = get_connection_state_with_motors();  
+  }
+  control_items.is_connect_motors = get_connection_state_with_motors();
 
-  if (p_tb3_model_info->has_manipulator == true) {
+  if (p_tb3_model_info->has_manipulator == true)
+  {
     // Check connection state with joints.
-    if(manipulator_driver.is_connected() == true){
-      manipulator_driver.set_torque(true);    
+    if (manipulator_driver.is_connected() == true)
+    {
+      manipulator_driver.set_torque(true);
       control_items.is_connect_manipulator = true;
       set_connection_state_with_joints(true);
-      DEBUG_PRINTLN("Joint motors are connected");      
-    }else{
+      DEBUG_PRINTLN("Joint motors are connected");
+    }
+    else
+    {
       control_items.is_connect_manipulator = false;
       set_connection_state_with_joints(false);
       DEBUG_PRINTLN("Can't communicate with the joint!");
       DEBUG_PRINTLN("  Please check the connection to the joint motor and the power supply.");
       DEBUG_PRINTLN();
-    } 
+    }
   }
 
-  // Init IMU 
+  // Init IMU
   sensors.initIMU();
   sensors.calibrationGyro();
 
-  //To indicate that the initialization is complete.
-  sensors.makeMelody(1); 
+  // To indicate that the initialization is complete.
+  sensors.makeMelody(1);
 
   DEBUG_PRINTLN("Begin End...");
 }
 
 /*******************************************************************************
-* Definition for TurtleBot3Core 'run()' function
-*******************************************************************************/
-void TurtleBot3Core::run()
+ * Definition for QurtleCore 'run()' function
+ *******************************************************************************/
+void QurtleCore::run()
 {
   static uint32_t pre_time_to_control_motor;
 
@@ -595,7 +613,7 @@ void TurtleBot3Core::run()
   sensors.onMelody();
 
   /* For getting command from rc100 */
-  // Receive data from RC100 
+  // Receive data from RC100
   controllers.getRCdata(goal_velocity_from_rc100);
 
   /* For processing DYNAMIXEL slave function */
@@ -611,37 +629,37 @@ void TurtleBot3Core::run()
   // Packet processing with ROS2 Node.
   dxl_slave.processPacket();
 
-  /* For controlling DYNAMIXEL motors (Wheels) */  
-  if (millis()-pre_time_to_control_motor >= INTERVAL_MS_TO_CONTROL_MOTOR)
+  /* For controlling DYNAMIXEL motors (Wheels) */
+  if (millis() - pre_time_to_control_motor >= INTERVAL_MS_TO_CONTROL_MOTOR)
   {
     pre_time_to_control_motor = millis();
-    if(get_connection_state_with_ros2_node() == false){
+    if (get_connection_state_with_ros2_node() == false)
+    {
       memset(goal_velocity_from_cmd, 0, sizeof(goal_velocity_from_cmd));
     }
     update_goal_velocity_from_3values();
-    if(get_connection_state_with_motors() == true){
+    if (get_connection_state_with_motors() == true)
+    {
       motor_driver.control_motors(p_tb3_model_info->wheel_separation, goal_velocity[VelocityType::LINEAR], goal_velocity[VelocityType::ANGULAR]);
     }
-  }  
+  }
 }
 
-
 /*******************************************************************************
-* Function definition for updating velocity values 
-* to be used for control of DYNAMIXEL(motors).
-*******************************************************************************/
+ * Function definition for updating velocity values
+ * to be used for control of DYNAMIXEL(motors).
+ *******************************************************************************/
 void update_goal_velocity_from_3values(void)
 {
-  goal_velocity[VelocityType::LINEAR]  = goal_velocity_from_button[VelocityType::LINEAR]  + goal_velocity_from_cmd[VelocityType::LINEAR]  + goal_velocity_from_rc100[VelocityType::LINEAR];
+  goal_velocity[VelocityType::LINEAR] = goal_velocity_from_button[VelocityType::LINEAR] + goal_velocity_from_cmd[VelocityType::LINEAR] + goal_velocity_from_rc100[VelocityType::LINEAR];
   goal_velocity[VelocityType::ANGULAR] = goal_velocity_from_button[VelocityType::ANGULAR] + goal_velocity_from_cmd[VelocityType::ANGULAR] + goal_velocity_from_rc100[VelocityType::ANGULAR];
 
   sensors.setLedPattern(goal_velocity[VelocityType::LINEAR], goal_velocity[VelocityType::ANGULAR]);
 }
 
-
 /*******************************************************************************
-* Function definition for updating control items in TB3.
-*******************************************************************************/
+ * Function definition for updating control items in TB3.
+ *******************************************************************************/
 float map_float(float x, float in_min, float in_max, float out_min, float out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -651,19 +669,21 @@ void update_times(uint32_t interval_ms)
 {
   static uint32_t pre_time = 0;
 
-  if(millis() - pre_time >= interval_ms){
+  if (millis() - pre_time >= interval_ms)
+  {
     pre_time = millis();
 
     control_items.dev_time_millis = millis();
     control_items.dev_time_micros = micros();
-  } 
+  }
 }
 
 void update_gpios(uint32_t interval_ms)
 {
   static uint32_t pre_time = 0;
 
-  if(millis() - pre_time >= interval_ms){
+  if (millis() - pre_time >= interval_ms)
+  {
     pre_time = millis();
 
     control_items.user_led[0] = digitalRead(BDPIN_GPIO_4);
@@ -676,7 +696,7 @@ void update_gpios(uint32_t interval_ms)
 
     control_items.bumper[0] = sensors.getBumper1State();
     control_items.bumper[1] = sensors.getBumper2State();
-  }  
+  }
 }
 
 void update_battery_status(uint32_t interval_ms)
@@ -684,15 +704,17 @@ void update_battery_status(uint32_t interval_ms)
   static uint32_t pre_time = 0;
   float bat_voltage, bat_percent;
 
-  if(millis() - pre_time >= interval_ms){
+  if (millis() - pre_time >= interval_ms)
+  {
     pre_time = millis();
 
     bat_voltage = sensors.checkVoltage();
-    control_items.bat_voltage_x100 = (uint32_t)(bat_voltage*100);
+    control_items.bat_voltage_x100 = (uint32_t)(bat_voltage * 100);
 
-    if(bat_voltage >= 3.5*3){
-      bat_percent = map_float(bat_voltage, 3.5*3, 4.1*3, 0.0, 100.0);
-      control_items.bat_percent_x100 = (uint32_t)(bat_percent*100);
+    if (bat_voltage >= 3.5 * 3)
+    {
+      bat_percent = map_float(bat_voltage, 3.5 * 3, 4.1 * 3, 0.0, 100.0);
+      control_items.bat_percent_x100 = (uint32_t)(bat_percent * 100);
     }
   }
 }
@@ -701,7 +723,8 @@ void update_analog_sensors(uint32_t interval_ms)
 {
   static uint32_t pre_time = 0;
 
-  if(millis() - pre_time >= interval_ms){
+  if (millis() - pre_time >= interval_ms)
+  {
     pre_time = millis();
 
     control_items.illumination = (uint16_t)sensors.getIlluminationData();
@@ -713,9 +736,10 @@ void update_analog_sensors(uint32_t interval_ms)
 void update_imu(uint32_t interval_ms)
 {
   static uint32_t pre_time = 0;
-  float* p_imu_data;
+  float *p_imu_data;
 
-  if(millis() - pre_time >= interval_ms){
+  if (millis() - pre_time >= interval_ms)
+  {
     pre_time = millis();
 
     p_imu_data = sensors.getImuAngularVelocity();
@@ -729,205 +753,230 @@ void update_imu(uint32_t interval_ms)
 
     p_imu_data = sensors.getOrientation();
     memcpy(control_items.orientation, p_imu_data, sizeof(control_items.orientation));
-  }  
+  }
 }
 
 void update_motor_status(uint32_t interval_ms)
 {
   static uint32_t pre_time;
-  int16_t current_l, current_r;
+  int16_t current_front_l, current_front_r, current_rear_l, current_rear_r;
 
-  if(millis() - pre_time >= interval_ms){
+  if (millis() - pre_time >= interval_ms)
+  {
     pre_time = millis();
-
 
     uint32_t pre_time_dxl;
 
     pre_time_dxl = millis();
-    if(get_connection_state_with_motors() == true){
-      motor_driver.read_present_position(control_items.present_position[MortorLocation::LEFT], control_items.present_position[MortorLocation::RIGHT]);
-      motor_driver.read_present_velocity(control_items.present_velocity[MortorLocation::LEFT], control_items.present_velocity[MortorLocation::RIGHT]);
-      if(motor_driver.read_present_current(current_l, current_r) == true){
-        control_items.present_current[MortorLocation::LEFT] = current_l;
-        control_items.present_current[MortorLocation::RIGHT] = current_r;
+    if (get_connection_state_with_motors() == true)
+    {
+      motor_driver.read_present_position(
+        control_items.present_position[MortorLocation::FRONT_LEFT], control_items.present_position[MortorLocation::FRONT_RIGHT],
+        control_items.present_position[MortorLocation::REAR_LEFT], control_items.present_position[MortorLocation::REAR_RIGHT]
+        );
+      motor_driver.read_present_velocity(
+        control_items.present_velocity[MortorLocation::FRONT_LEFT], control_items.present_velocity[MortorLocation::FRONT_RIGHT],
+        control_items.present_velocity[MortorLocation::REAR_LEFT], control_items.present_velocity[MortorLocation::REAR_RIGHT]);
+      if (motor_driver.read_present_current(current_front_l, current_front_r, current_rear_l, current_rear_r) == true)
+      {
+        control_items.present_current[MortorLocation::FRONT_LEFT] = current_front_l;
+        control_items.present_current[MortorLocation::FRONT_RIGHT] = current_front_r;
+        control_items.present_current[MortorLocation::REAR_LEFT] = current_rear_l;
+        control_items.present_current[MortorLocation::REAR_RIGHT] = current_rear_r;
       }
 
       control_items.motor_torque_enable_state = motor_driver.get_torque();
     }
-  }  
+  }
 }
 
 void update_joint_status(uint32_t interval_ms)
 {
   static uint32_t pre_time;
 
-  if(millis() - pre_time >= interval_ms){
+  if (millis() - pre_time >= interval_ms)
+  {
     pre_time = millis();
 
     manipulator_driver.read_present_position(control_items.joint_present_position);
     manipulator_driver.read_present_velocity(control_items.joint_present_velocity);
     manipulator_driver.read_present_current(control_items.joint_present_current);
 
-    if(get_connection_state_with_joints() == true){
+    if (get_connection_state_with_joints() == true)
+    {
 
       control_items.joint_torque_enable_state = manipulator_driver.get_torque();
     }
-  }  
-}
-
-/*******************************************************************************
-* Callback function definition to be used in communication with the ROS2 node.
-*******************************************************************************/
-static void dxl_slave_write_callback_func(uint16_t item_addr, uint8_t &dxl_err_code, void* arg)
-{
-  (void)arg;
-
-  switch(item_addr)
-  {
-    case ADDR_MODEL_INFORM:
-      control_items.model_inform = p_tb3_model_info->model_info;
-      dxl_err_code = DXL_ERR_ACCESS;
-      break;
-
-    case ADDR_DEBUG_MODE:
-      if (control_items.debug_mode == true)
-        DEBUG_PRINTLN("Debug Mode : Enabled");
-      else
-        DEBUG_PRINTLN("Debug Mode : Disabled");
-      break;
-
-    case ADDR_SOUND:
-      sensors.makeMelody(control_items.buzzer_sound);
-      break;
-
-    case ADDR_IMU_RECALIBRATION:
-      if(control_items.imu_recalibration == true){
-        sensors.calibrationGyro();
-        control_items.imu_recalibration = false;
-      }
-      break;
-
-    case ADDR_MOTOR_TORQUE:
-      if(get_connection_state_with_motors() == true)
-        motor_driver.set_torque(control_items.motor_torque_enable_state);
-      break;
-
-    case ADDR_CMD_VEL_LINEAR_X:
-      goal_velocity_from_cmd[VelocityType::LINEAR] = constrain((float)(control_items.cmd_vel_linear[0]*0.01f), min_linear_velocity, max_linear_velocity);
-      break;
-
-    case ADDR_CMD_VEL_ANGULAR_Z:
-      goal_velocity_from_cmd[VelocityType::ANGULAR] = constrain((float)(control_items.cmd_vel_angular[2]*0.01f), min_angular_velocity, max_angular_velocity);
-      break;            
-
-    case ADDR_PROFILE_ACC_L:
-    case ADDR_PROFILE_ACC_R:
-      if(get_connection_state_with_motors() == true)
-        motor_driver.write_profile_acceleration(control_items.profile_acceleration[MortorLocation::LEFT], control_items.profile_acceleration[MortorLocation::RIGHT]);
-      break;
-
-    case ADDR_TORQUE_JOINT:
-      manipulator_driver.set_torque(control_items.joint_torque_enable_state);
-      break;
-
-    // ADDR_GOAL_POSITION
-    //
-    case ADDR_GOAL_POSITION_WR_JOINT:
-      if (get_connection_state_with_ros2_node() == true && control_items.joint_goal_position_wr_joint == true) {
-        manipulator_driver.write_goal_position_joint(control_items.joint_goal_position);
-      }
-      control_items.joint_goal_position_wr_joint = false;
-      break;
-
-    case ADDR_GOAL_POSITION_WR_GRIPPER:
-      if (get_connection_state_with_ros2_node() == true && control_items.joint_goal_position_wr_gripper == true) {
-        manipulator_driver.write_goal_position_gripper(control_items.joint_goal_position);
-      }
-      control_items.joint_goal_position_wr_gripper = false;
-      break;
-
-    case ADDR_GOAL_POSITION_RD:
-      if (control_items.joint_goal_position_rd == true) {
-        manipulator_driver.read_goal_position(control_items.joint_goal_position);
-      }
-      control_items.joint_goal_position_rd = false;
-      break;
-
-    // ADDR_PROFILE_ACC
-    //
-    case ADDR_PROFILE_ACC_WR_JOINT:
-      if (get_connection_state_with_ros2_node() == true && control_items.joint_profile_acc_wr_joint == true) {
-        manipulator_driver.write_profile_acceleration_joint(control_items.joint_profile_acc);
-      }
-      control_items.joint_profile_acc_wr_joint = false;
-      break;      
-
-    case ADDR_PROFILE_ACC_WR_GRIPPER:
-      if (get_connection_state_with_ros2_node() == true && control_items.joint_profile_acc_wr_gripper == true) {
-        manipulator_driver.write_profile_acceleration_gripper(control_items.joint_profile_acc);
-      }
-      control_items.joint_profile_acc_wr_joint = false;
-      break;      
-
-    case ADDR_PROFILE_ACC_RD:
-      if (control_items.joint_profile_acc_rd == true) {
-        manipulator_driver.read_profile_acceleration(control_items.joint_profile_acc);
-      }
-      control_items.joint_profile_acc_rd = false;
-      break;     
-
-    // ADDR_PROFILE_VEL
-    //
-    case ADDR_PROFILE_VEL_WR_JOINT:
-      if (get_connection_state_with_ros2_node() == true && control_items.joint_profile_vel_wr_joint == true) {
-        manipulator_driver.write_profile_velocity_joint(control_items.joint_profile_vel);
-      }
-      control_items.joint_profile_vel_wr_joint = false;
-      break;      
-
-    case ADDR_PROFILE_VEL_WR_GRIPPER:
-      if (get_connection_state_with_ros2_node() == true && control_items.joint_profile_vel_wr_gripper == true) {
-        manipulator_driver.write_profile_velocity_gripper(control_items.joint_profile_vel);
-      }
-      control_items.joint_profile_vel_wr_gripper = false;
-      break;   
-
-    case ADDR_PROFILE_VEL_RD:
-      if (control_items.joint_profile_vel_rd == true) {
-        manipulator_driver.read_profile_velocity(control_items.joint_profile_vel);
-      }
-      control_items.joint_profile_vel_rd = false;
-      break;      
-
-    // ADDR_GOAL_CURRENT
-    //
-    case ADDR_GOAL_CURRENT_WR_JOINT:
-      if (get_connection_state_with_ros2_node() == true && control_items.joint_goal_current_wr_joint == true) {
-        manipulator_driver.write_goal_current_joint(control_items.joint_goal_current);
-      }
-      control_items.joint_goal_current_wr_joint = false;
-      break;      
-
-    case ADDR_GOAL_CURRENT_WR_GRIPPER:
-      if (get_connection_state_with_ros2_node() == true && control_items.joint_goal_current_wr_gripper == true) {
-        manipulator_driver.write_goal_current_gripper(control_items.joint_goal_current);
-      }
-      control_items.joint_goal_current_wr_gripper = false;
-      break;   
-
-    case ADDR_GOAL_CURRENT_RD:
-      if (control_items.joint_goal_current_rd == true) {
-        manipulator_driver.read_goal_current(control_items.joint_goal_current);
-      }
-      control_items.joint_goal_current_rd = false;
-      break;        
   }
 }
 
+/*******************************************************************************
+ * Callback function definition to be used in communication with the ROS2 node.
+ *******************************************************************************/
+static void dxl_slave_write_callback_func(uint16_t item_addr, uint8_t &dxl_err_code, void *arg)
+{
+  (void)arg;
+
+  switch (item_addr)
+  {
+  case ADDR_MODEL_INFORM:
+    control_items.model_inform = p_tb3_model_info->model_info;
+    dxl_err_code = DXL_ERR_ACCESS;
+    break;
+
+  case ADDR_DEBUG_MODE:
+    if (control_items.debug_mode == true)
+      DEBUG_PRINTLN("Debug Mode : Enabled");
+    else
+      DEBUG_PRINTLN("Debug Mode : Disabled");
+    break;
+
+  case ADDR_SOUND:
+    sensors.makeMelody(control_items.buzzer_sound);
+    break;
+
+  case ADDR_IMU_RECALIBRATION:
+    if (control_items.imu_recalibration == true)
+    {
+      sensors.calibrationGyro();
+      control_items.imu_recalibration = false;
+    }
+    break;
+
+  case ADDR_MOTOR_TORQUE:
+    if (get_connection_state_with_motors() == true)
+      motor_driver.set_torque(control_items.motor_torque_enable_state);
+    break;
+
+  case ADDR_CMD_VEL_LINEAR_X:
+    goal_velocity_from_cmd[VelocityType::LINEAR] = constrain((float)(control_items.cmd_vel_linear[0] * 0.01f), min_linear_velocity, max_linear_velocity);
+    break;
+
+  case ADDR_CMD_VEL_ANGULAR_Z:
+    goal_velocity_from_cmd[VelocityType::ANGULAR] = constrain((float)(control_items.cmd_vel_angular[2] * 0.01f), min_angular_velocity, max_angular_velocity);
+    break;
+
+  case ADDR_PROFILE_ACC_L:
+  case ADDR_PROFILE_ACC_R:
+    if (get_connection_state_with_motors() == true)
+      motor_driver.write_profile_acceleration(
+        control_items.profile_acceleration[MortorLocation::FRONT_LEFT], control_items.profile_acceleration[MortorLocation::FRONT_RIGHT],
+        control_items.profile_acceleration[MortorLocation::REAR_LEFT], control_items.profile_acceleration[MortorLocation::REAR_RIGHT]);
+    break;
+
+  case ADDR_TORQUE_JOINT:
+    manipulator_driver.set_torque(control_items.joint_torque_enable_state);
+    break;
+
+  // ADDR_GOAL_POSITION
+  //
+  case ADDR_GOAL_POSITION_WR_JOINT:
+    if (get_connection_state_with_ros2_node() == true && control_items.joint_goal_position_wr_joint == true)
+    {
+      manipulator_driver.write_goal_position_joint(control_items.joint_goal_position);
+    }
+    control_items.joint_goal_position_wr_joint = false;
+    break;
+
+  case ADDR_GOAL_POSITION_WR_GRIPPER:
+    if (get_connection_state_with_ros2_node() == true && control_items.joint_goal_position_wr_gripper == true)
+    {
+      manipulator_driver.write_goal_position_gripper(control_items.joint_goal_position);
+    }
+    control_items.joint_goal_position_wr_gripper = false;
+    break;
+
+  case ADDR_GOAL_POSITION_RD:
+    if (control_items.joint_goal_position_rd == true)
+    {
+      manipulator_driver.read_goal_position(control_items.joint_goal_position);
+    }
+    control_items.joint_goal_position_rd = false;
+    break;
+
+  // ADDR_PROFILE_ACC
+  //
+  case ADDR_PROFILE_ACC_WR_JOINT:
+    if (get_connection_state_with_ros2_node() == true && control_items.joint_profile_acc_wr_joint == true)
+    {
+      manipulator_driver.write_profile_acceleration_joint(control_items.joint_profile_acc);
+    }
+    control_items.joint_profile_acc_wr_joint = false;
+    break;
+
+  case ADDR_PROFILE_ACC_WR_GRIPPER:
+    if (get_connection_state_with_ros2_node() == true && control_items.joint_profile_acc_wr_gripper == true)
+    {
+      manipulator_driver.write_profile_acceleration_gripper(control_items.joint_profile_acc);
+    }
+    control_items.joint_profile_acc_wr_joint = false;
+    break;
+
+  case ADDR_PROFILE_ACC_RD:
+    if (control_items.joint_profile_acc_rd == true)
+    {
+      manipulator_driver.read_profile_acceleration(control_items.joint_profile_acc);
+    }
+    control_items.joint_profile_acc_rd = false;
+    break;
+
+  // ADDR_PROFILE_VEL
+  //
+  case ADDR_PROFILE_VEL_WR_JOINT:
+    if (get_connection_state_with_ros2_node() == true && control_items.joint_profile_vel_wr_joint == true)
+    {
+      manipulator_driver.write_profile_velocity_joint(control_items.joint_profile_vel);
+    }
+    control_items.joint_profile_vel_wr_joint = false;
+    break;
+
+  case ADDR_PROFILE_VEL_WR_GRIPPER:
+    if (get_connection_state_with_ros2_node() == true && control_items.joint_profile_vel_wr_gripper == true)
+    {
+      manipulator_driver.write_profile_velocity_gripper(control_items.joint_profile_vel);
+    }
+    control_items.joint_profile_vel_wr_gripper = false;
+    break;
+
+  case ADDR_PROFILE_VEL_RD:
+    if (control_items.joint_profile_vel_rd == true)
+    {
+      manipulator_driver.read_profile_velocity(control_items.joint_profile_vel);
+    }
+    control_items.joint_profile_vel_rd = false;
+    break;
+
+  // ADDR_GOAL_CURRENT
+  //
+  case ADDR_GOAL_CURRENT_WR_JOINT:
+    if (get_connection_state_with_ros2_node() == true && control_items.joint_goal_current_wr_joint == true)
+    {
+      manipulator_driver.write_goal_current_joint(control_items.joint_goal_current);
+    }
+    control_items.joint_goal_current_wr_joint = false;
+    break;
+
+  case ADDR_GOAL_CURRENT_WR_GRIPPER:
+    if (get_connection_state_with_ros2_node() == true && control_items.joint_goal_current_wr_gripper == true)
+    {
+      manipulator_driver.write_goal_current_gripper(control_items.joint_goal_current);
+    }
+    control_items.joint_goal_current_wr_gripper = false;
+    break;
+
+  case ADDR_GOAL_CURRENT_RD:
+    if (control_items.joint_goal_current_rd == true)
+    {
+      manipulator_driver.read_goal_current(control_items.joint_goal_current);
+    }
+    control_items.joint_goal_current_rd = false;
+    break;
+  }
+}
 
 /*******************************************************************************
-* Function definition to check the connection status with the ROS2 node.
-*******************************************************************************/
+ * Function definition to check the connection status with the ROS2 node.
+ *******************************************************************************/
 static bool connection_state_with_ros2_node = false;
 
 static bool get_connection_state_with_ros2_node()
@@ -946,19 +995,24 @@ void update_connection_state_with_ros2_node()
   static uint8_t pre_data;
   static bool pre_state;
 
-  //To wait for IMU Calibration
-  if(pre_state != get_connection_state_with_ros2_node()){
+  // To wait for IMU Calibration
+  if (pre_state != get_connection_state_with_ros2_node())
+  {
     pre_state = get_connection_state_with_ros2_node();
     pre_time = millis();
     return;
   }
 
-  if(pre_data != control_items.heart_beat || control_items.debug_mode == true){
+  if (pre_data != control_items.heart_beat || control_items.debug_mode == true)
+  {
     pre_time = millis();
     pre_data = control_items.heart_beat;
     set_connection_state_with_ros2_node(true);
-  }else{
-    if(millis()-pre_time >= HEARTBEAT_TIMEOUT_MS){
+  }
+  else
+  {
+    if (millis() - pre_time >= HEARTBEAT_TIMEOUT_MS)
+    {
       pre_time = millis();
       set_connection_state_with_ros2_node(false);
     }
@@ -967,10 +1021,9 @@ void update_connection_state_with_ros2_node()
   control_items.is_connect_ros2_node = get_connection_state_with_ros2_node();
 }
 
-
 /*******************************************************************************
-* Function definition to check the connection with the motor.
-*******************************************************************************/
+ * Function definition to check the connection with the motor.
+ *******************************************************************************/
 static bool is_connected_motors = false;
 
 static bool get_connection_state_with_motors()
@@ -984,8 +1037,8 @@ static void set_connection_state_with_motors(bool is_connected)
 }
 
 /*******************************************************************************
-* Function definition to check the connection with the motor.
-*******************************************************************************/
+ * Function definition to check the connection with the motor.
+ *******************************************************************************/
 static bool is_connected_joints = false;
 
 static bool get_connection_state_with_joints()
@@ -999,60 +1052,70 @@ static void set_connection_state_with_joints(bool is_connected)
 }
 
 /*******************************************************************************
-* Function definition to test motors using the built-in buttons of OpenCR.
-*******************************************************************************/
+ * Function definition to test motors using the built-in buttons of OpenCR.
+ *******************************************************************************/
 const float TICK2RAD = 0.001533981; // 0.087890625[deg] * 3.14159265359 / 180 = 0.001533981f
-const float TEST_DISTANCE = 0.300; // meter
-const float TEST_RADIAN = 3.14; // 180 degree
+const float TEST_DISTANCE = 0.300;  // meter
+const float TEST_RADIAN = 3.14;     // 180 degree
 
 void test_motors_with_buttons(uint8_t buttons)
 {
-  static bool move[2] = {false, false};
-  static int32_t saved_tick[2] = {0, 0};
+  static bool move[4] = {false, false, false, false};
+  static int32_t saved_tick[4] = {0, 0, 0, 0};
   static double diff_encoder = 0.0;
 
-  int32_t current_tick[2] = {0, 0};
+  int32_t current_tick[4] = {0, 0, 0, 0};
 
-  if(get_connection_state_with_motors() == true){
-    motor_driver.read_present_position(current_tick[MortorLocation::LEFT], current_tick[MortorLocation::RIGHT]);
+  if (get_connection_state_with_motors() == true)
+  {
+    motor_driver.read_present_position(
+      current_tick[MortorLocation::FRONT_LEFT], current_tick[MortorLocation::FRONT_RIGHT],
+      current_tick[MortorLocation::REAR_LEFT], current_tick[MortorLocation::REAR_RIGHT]
+      );
   }
 
-  if (buttons & (1<<0))  
+  if (buttons & (1 << 0))
   {
     move[VelocityType::LINEAR] = true;
-    saved_tick[MortorLocation::RIGHT] = current_tick[MortorLocation::RIGHT];
+    saved_tick[MortorLocation::FRONT_RIGHT] = current_tick[MortorLocation::FRONT_RIGHT];
+    saved_tick[MortorLocation::REAR_RIGHT] = current_tick[MortorLocation::REAR_RIGHT];
 
     diff_encoder = TEST_DISTANCE / (0.207 / 4096); // (Circumference of Wheel) / (The number of tick per revolution)
   }
-  else if (buttons & (1<<1))
+  else if (buttons & (1 << 1))
   {
     move[VelocityType::ANGULAR] = true;
-    saved_tick[MortorLocation::RIGHT] = current_tick[MortorLocation::RIGHT];
+    saved_tick[MortorLocation::FRONT_RIGHT] = current_tick[MortorLocation::FRONT_RIGHT];
+    saved_tick[MortorLocation::REAR_RIGHT] = current_tick[MortorLocation::REAR_RIGHT];
 
     diff_encoder = (TEST_RADIAN * p_tb3_model_info->turning_radius) / (0.207 / 4096);
   }
 
   if (move[VelocityType::LINEAR])
-  {    
-    if (abs(saved_tick[MortorLocation::RIGHT] - current_tick[MortorLocation::RIGHT]) <= diff_encoder)
+  {
+    if (
+      abs(saved_tick[MortorLocation::FRONT_RIGHT] - current_tick[MortorLocation::FRONT_RIGHT]) <= diff_encoder &&
+      abs(saved_tick[MortorLocation::REAR_RIGHT] - current_tick[MortorLocation::REAR_RIGHT]) <= diff_encoder)
     {
-      goal_velocity_from_button[VelocityType::LINEAR]  = 0.05;
+      goal_velocity_from_button[VelocityType::LINEAR] = 0.05;
     }
     else
     {
-      goal_velocity_from_button[VelocityType::LINEAR]  = 0.0;
+      goal_velocity_from_button[VelocityType::LINEAR] = 0.0;
       move[VelocityType::LINEAR] = false;
     }
   }
   else if (move[VelocityType::ANGULAR])
-  {   
-    if (abs(saved_tick[MortorLocation::RIGHT] - current_tick[MortorLocation::RIGHT]) <= diff_encoder)
+  {
+    if (
+      abs(saved_tick[MortorLocation::FRONT_RIGHT] - current_tick[MortorLocation::FRONT_RIGHT]) <= diff_encoder &&
+      abs(saved_tick[MortorLocation::REAR_RIGHT] - current_tick[MortorLocation::REAR_RIGHT]) <= diff_encoder)
     {
-      goal_velocity_from_button[VelocityType::ANGULAR]= -0.7;
+      goal_velocity_from_button[VelocityType::ANGULAR] = -0.7;
     }
     else
     {
-      goal_velocity_from_button[VelocityType::ANGULAR]  = 0.0;
+      goal_velocity_from_button[VelocityType::ANGULAR] = 0.0;
       move[VelocityType::ANGULAR] = false;
     }
   }

@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "../../include/turtlebot3/turtlebot3_diagnosis.h"
+#include "../../include/qurtle/turtlebot3_diagnosis.h"
 
 Turtlebot3Diagnosis::Turtlebot3Diagnosis()
 {
