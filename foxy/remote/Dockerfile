@@ -60,7 +60,8 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc && \
     echo "source /usr/share/vcstool-completion/vcs.bash" >> ~/.bashrc
 
 # https://answers.ros.org/question/372890/rqt-button-not-show-icon/
-RUN ln -s /usr/share/icons/Tango ~/.icons/hicolor
+RUN mkdir ~/.icons && \
+    ln -s /usr/share/icons/Tango ~/.icons/hicolor
 
 RUN echo "alias vi=nvim" >> ~/.bash_aliases
 
