@@ -13,28 +13,30 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Use the bash shell
 SHELL ["/bin/bash", "-c"]
 
-# Create workspace
-RUN mkdir -p /turtlebot3_ws
-
-WORKDIR /turtlebot3_ws
-
 # Install prerequiste packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     python3-pip \
     python-is-python3 \
     iproute2 \
-    neovim
-#    libudev-dev
+    neovim \
+    locales
 
-# Install ROS 2
-# RUN wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/install_ros2_${ROS_DISTRO}.sh && \
-#    chmod 755 ./install_ros2_${ROS_DISTRO}.sh && \
-#    source ./install_ros2_${ROS_DISTRO}.sh
+# Change the locale from POSIX to UTF-8
+RUN locale-gen en_US en_US.UTF-8 && \
+    update_locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV PYTHONIOENCODING=utf-8
+
+# Create workspace
+RUN mkdir -p /robot_ws
+WORKDIR /robot_ws
 
 # Install ROS 2-related and TurtleBot3 packages
 RUN apt-get install -y \
+    # DDS
     ros-foxy-hls-lfcd-lds-driver \
+    # TurtleBot3
     ros-${ROS_DISTRO}-turtlebot3-msgs \
     ros-${ROS_DISTRO}-dynamixel-sdk \
     ros-${ROS_DISTRO}-turtlebot3
