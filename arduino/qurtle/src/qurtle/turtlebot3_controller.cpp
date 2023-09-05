@@ -45,6 +45,7 @@ void Turtlebot3Controller::getRCdata(float *get_cmd_vel)
 
   static float lin_x = 0.0, ang_z = 0.0;
   
+  rc100_.available(); // Warm up
   if (rc100_.available())
   {
     received_data = rc100_.readData();
