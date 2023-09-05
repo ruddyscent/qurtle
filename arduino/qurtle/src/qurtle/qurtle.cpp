@@ -638,10 +638,10 @@ void QurtleCore::run()
       memset(goal_velocity_from_cmd, 0, sizeof(goal_velocity_from_cmd));
     }
     update_goal_velocity_from_3values();
-    // if (get_connection_state_with_motors())
-    // {
+    if (get_connection_state_with_motors())
+    {
       motor_driver.control_motors(p_tb3_model_info->wheel_separation, goal_velocity[VelocityType::LINEAR], goal_velocity[VelocityType::ANGULAR]);
-    // }
+    }
   }
 }
 
